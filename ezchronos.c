@@ -69,8 +69,14 @@
 #ifndef ELIMINATE_BLUEROBIN 
 #include "bluerobin.h"
 #endif
+#ifdef CONFIG_SWAP
+#include "swapbrsr.h"
+//#include "regtable.h"
+#include "periodic.h"
+#else
 #include "rfsimpliciti.h"
 #include "simpliciti.h"
+#endif
 #ifdef CONFIG_TEST
 #include "test.h"
 #endif
@@ -141,13 +147,16 @@ void (*fptr_lcd_function_line2)(u8 line, u8 update);
 #ifdef CONFIG_ALTI_ACCUMULATOR
 extern u8 alt_accum_enable;	// used by altitude accumulator function
 #endif
+#ifndef CONFIG_SWAP
 extern void start_simpliciti_sync(void);
-
+#endif
 extern u16 ps_read_register(u8 address, u8 mode);
 extern u8 ps_write_register(u8 address, u8 data);
 
+#ifndef CONFIG_SWAP
 // rf hardware address
 static const addr_t   sMyROMAddress = {THIS_DEVICE_ADDRESS};
+#endif
 
 // *************************************************************************************************
 // @fn          main
@@ -159,23 +168,19 @@ int main(void)
 {
 	// Init MCU 
 	init_application();
-
 	// Assign initial value to global variables
 	init_global_variables();
-
 #ifdef CONFIG_TEST
 	// Branch to welcome screen
-	test_mode();
+//	test_mode();
 #else
 	display_all_off();
 #endif
-	
 	// Main control loop: wait in low power mode until some event needs to be processed
 	while(1)
 	{
 		// When idle go to LPM3
     	idle_loop();
-
     	// Process wake-up events
     	if (button.all_flags || sys.all_flags) wakeup_event();
     	
@@ -184,7 +189,7 @@ int main(void)
     	
     	// Before going to LPM3, update display
     	if (display.all_flags) display_update();	
- 	}	
+ 	}
 }
 
 
@@ -419,8 +424,12 @@ void init_global_variables(void)
 	sPhase.program = 0;
 #endif
 
+  #ifndef CONFIG_SWAP
 	// Reset SimpliciTI stack
 	reset_rf();
+  #else
+  swInitBrowser();
+  #endif
 	
 	// Reset temperature measurement 
 	reset_temp_measurement();
@@ -611,6 +620,10 @@ void process_requests(void)
 
 	// Reset request flag
 	request.all_flags = 0;
+
+#ifdef CONFIG_SWAP
+  sendPeriodicAcc();
+#endif
 }
 
 
@@ -884,10 +897,12 @@ void read_calibration_values(void)
 		#ifdef CONFIG_BATTERY
 		sBatt.offset 	= -10;	
 		#endif
+    #ifndef CONFIG_SWAP
 		simpliciti_ed_address[0] = sMyROMAddress.addr[0];
 		simpliciti_ed_address[1] = sMyROMAddress.addr[1];
 		simpliciti_ed_address[2] = sMyROMAddress.addr[2];
 		simpliciti_ed_address[3] = sMyROMAddress.addr[3];
+    #endif
 #ifdef CONFIG_ALTITUDE
 		sAlt.altitude_offset	 = 0;
 #endif
@@ -905,10 +920,12 @@ void read_calibration_values(void)
 		#ifdef CONFIG_BATTERY
 		sBatt.offset 	= (s16)((cal_data[4] << 8) + cal_data[5]);
 		#endif
+    #ifndef CONFIG_SWAP
 		simpliciti_ed_address[0] = cal_data[6];
 		simpliciti_ed_address[1] = cal_data[7];
 		simpliciti_ed_address[2] = cal_data[8];
 		simpliciti_ed_address[3] = cal_data[9];
+    #endif
 		// S/W version byte set during calibration?
 #ifdef CONFIG_ALTITUDE
 		if (cal_data[12] != 0xFF)
@@ -949,7 +966,7 @@ void menu_skip_next(line_t line)
 	}
 	else if(line==LINE2)
 	{
-	// Clean up display before activating next menu item
+	  // Clean up display before activating next menu item
 		fptr_lcd_function_line2(LINE2, DISPLAY_LINE_CLEAR);
 
 		if(++menu_L2_position>=menu_L2_size)
@@ -964,3 +981,37 @@ void menu_skip_next(line_t line)
 
 }
 
+#ifdef CONFIG_SWAP
+/**
+ * ezGoToFirstMenuItem
+ *
+ * Go to first menu1 and menu2 screens
+ */
+void ezGoToFirstMenuItem(void)
+{
+  // Line 1
+  menu_L1_position=0;
+  ptrMenu_L1 = menu_L1[menu_L1_position];
+  fptr_lcd_function_line1 = ptrMenu_L1->display_function;
+	display.flag.line1_full_update = 1;
+
+  // Line 2
+  menu_L2_position=0;
+  ptrMenu_L2 = menu_L2[menu_L2_position];
+  fptr_lcd_function_line2 = ptrMenu_L2->display_function;
+	display.flag.line2_full_update = 1;
+}
+
+/**
+ * ezSetDisplayFunct
+ *
+ * Set display function
+ */
+void ezSetDisplayFunct(line_t line, void *dispFunct)
+{
+  if (line == LINE1)
+    fptr_lcd_function_line1 = dispFunct;
+  else if (line == LINE2)
+    fptr_lcd_function_line2 = dispFunct;
+}
+#endif

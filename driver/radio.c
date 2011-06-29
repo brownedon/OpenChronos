@@ -177,8 +177,12 @@ interrupt (CC1101_VECTOR) radio_ISR(void)
 __interrupt void radio_ISR(void)
 #endif
 {
+#ifdef CONFIG_SWAP
+  MRFI_RadioIsr();
+#else
+
 	u8 rf1aivec = RF1AIV;
-	
+
 	// Forward to SimpliciTI interrupt service routine
 	if (is_rf())
 	{
@@ -202,4 +206,5 @@ __interrupt void radio_ISR(void)
 			asm("	nop"); // break here
 		}
 	}
+#endif
 }

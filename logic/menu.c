@@ -96,6 +96,10 @@
 #include "gps.h"
 #endif
 
+#ifdef CONFIG_SWAP
+#include "swapbrsr.h"
+#endif
+
 
 // *************************************************************************************************
 // Defines section
@@ -114,40 +118,48 @@ extern void menu_skip_next(line_t line); //ezchronos.c
 
 void display_nothing(u8 line, u8 update) {}
 
+#ifdef CONFIG_CLOCK
 u8 update_time(void)
 {
 	return (display.flag.update_time);
 }
+#endif
 #ifdef CONFIG_STOP_WATCH
 u8 update_stopwatch(void)
 {
 	return (display.flag.update_stopwatch);
 }
 #endif
+#ifdef CONFIG_DATE
 u8 update_date(void)
 {
 	return (display.flag.update_date);
 }
+#endif
 #ifdef CONFIG_ALARM
 u8 update_alarm(void)
 {
 	return (display.flag.update_alarm);
 }
 #endif
+#ifdef CONFIG_TEMP
 u8 update_temperature(void)
 {
 	return (display.flag.update_temperature);
 }
+#endif
 #ifdef CONFIG_BATTERY
 u8 update_battery_voltage(void)
 {
 	return (display.flag.update_battery_voltage);
 }
 #endif
+#ifdef CONFIG_ACCEL
 u8 update_acceleration(void)
 {
 	return (display.flag.update_acceleration);
 }
+#endif
 #ifdef CONFIG_EGGTIMER
 u8 update_eggtimer(void)
 {
@@ -172,6 +184,7 @@ u8 update_sidereal(void)
 // *************************************************************************************************
 
 // Line1 - Time
+#ifdef CONFIG_CLOCK
 const struct menu menu_L1_Time =
 {
 	FUNCTION(sx_time),			// direct function
@@ -180,7 +193,7 @@ const struct menu menu_L1_Time =
 	FUNCTION(display_time),		// display function
 	FUNCTION(update_time),		// new display data
 };
-
+#endif
 #ifdef CONFIG_SIDEREAL
 // Line1 - Sidereal Time
 const struct menu menu_L1_Sidereal =
@@ -204,6 +217,7 @@ const struct menu menu_L1_Alarm =
 	FUNCTION(update_alarm),		// new display data
 };
 #endif
+#ifdef CONFIG_TEMP
 // Line1 - Temperature
 const struct menu menu_L1_Temperature =
 {
@@ -213,7 +227,7 @@ const struct menu menu_L1_Temperature =
 	FUNCTION(display_temperature),		// display function
 	FUNCTION(update_temperature),		// new display data
 };
-
+#endif
 #ifdef CONFIG_ALTITUDE
 // Line1 - Altitude
 const struct menu menu_L1_Altitude =
@@ -270,7 +284,7 @@ const struct menu menu_L1_Acceleration =
 	FUNCTION(update_acceleration),		// new display data
 };
 #endif
-
+#ifdef CONFIG_DATE
 // Line2 - Date
 const struct menu menu_L2_Date =
 {
@@ -280,6 +294,7 @@ const struct menu menu_L2_Date =
 	FUNCTION(display_date),		// display function
 	FUNCTION(update_date),		// new display data
 };
+#endif
 #ifdef CONFIG_VARIO
 //Line 2 - Vario
 const struct menu menu_L2_Vario = 
@@ -356,15 +371,16 @@ const struct menu menu_L2_Rf =
 // Line2 - PPT (button events via SimpliciTI)
 const struct menu menu_L2_Ppt =
 {
-	FUNCTION(sx_ppt),				// direct function
-	FUNCTION(dummy),				// sub menu function
+	FUNCTION(sx_ppt),				    // direct function
+	FUNCTION(dummy),				    // sub menu function
 	FUNCTION(menu_skip_next),		// next item function
 	FUNCTION(display_ppt),			// display function
 	FUNCTION(update_time),			// new display data
 };
 #endif
 
-#ifndef CONFIG_USE_SYNC_TOSET_TIME
+//#ifndef CONFIG_USE_SYNC_TOSET_TIME
+#ifdef CONFIG_USE_SYNC_TOSET_TIME
 // Line2 - SXNC (synchronization/data download via SimpliciTI)
 const struct menu menu_L2_Sync =
 {
@@ -388,7 +404,8 @@ const struct menu menu_L2_CalDist =
 	//&menu_L2_RFBSL,
 };
 #endif
-#ifndef CONFIG_USE_DISCRET_RFBSL
+//#ifndef CONFIG_USE_DISCRET_RFBSL
+#ifdef CONFIG_USE_DISCRET_RFBSL
 // Line2 - RFBSL
 const struct menu menu_L2_RFBSL =
 {
@@ -436,11 +453,43 @@ const struct menu menu_L2_Gps =
 };
 #endif
 
+#ifdef CONFIG_SWAP
+// Line1 - SWAP browser
+const struct menu menu_L1_SWAP =
+{
+	FUNCTION(dummy),					  // direct function
+	FUNCTION(dummy),					  // sub menu function
+	FUNCTION(menu_skip_next),		// next item function
+	FUNCTION(display_swap),			// display function
+	FUNCTION(dummy),			      // new display data
+};
+// Line2 - SWAP browser
+const struct menu menu_L2_SWAP =
+{
+	FUNCTION(dummy),					  // direct function
+	FUNCTION(dummy),					  // sub menu function
+	FUNCTION(dummy),		        // next item function
+	FUNCTION(dummy),		        // display function
+	FUNCTION(dummy),			      // new display data
+};
+// Line2 - SXNC (synchronization/data download via SWAP)
+const struct menu menu_L2_Synchro =
+{
+	FUNCTION(sx_synchro),				// direct function
+	FUNCTION(dummy),				    // sub menu function
+	FUNCTION(menu_skip_next),		// next item function
+	FUNCTION(display_synchro),	// display function
+	FUNCTION(dummy),			// new display data
+};
+#endif
+
 // *************************************************************************************************
 // menu array
 
 const struct menu *menu_L1[]={
+  #ifdef CONFIG_CLOCK
 	&menu_L1_Time,
+  #endif
 	#ifdef CONFIG_STRENGTH
 	&menu_L1_Strength,
 	#endif
@@ -450,7 +499,9 @@ const struct menu *menu_L1[]={
 	#ifdef CONFIG_ALARM
 	&menu_L1_Alarm,
 	#endif
+  #ifdef CONFIG_TEMP
 	&menu_L1_Temperature,
+  #endif
 	#ifdef CONFIG_ALTITUDE
 	&menu_L1_Altitude,
 	#endif
@@ -463,13 +514,18 @@ const struct menu *menu_L1[]={
 	#ifdef CONFIG_ACCEL
 	&menu_L1_Acceleration,
 	#endif
+	#ifdef CONFIG_SWAP
+	&menu_L1_SWAP
+	#endif
 };
 
 const int menu_L1_size=sizeof(menu_L1)/sizeof(struct menu*);
 int menu_L1_position=0;
 
 const struct menu *menu_L2[]={
+  #ifdef CONFIG_DATE
 	&menu_L2_Date,
+  #endif
 	#ifdef CONFIG_VARIO
 	&menu_L2_Vario,
 	#endif
@@ -491,13 +547,15 @@ const struct menu *menu_L2[]={
 	#ifdef CONFIG_USEPPT
 	&menu_L2_Ppt,
 	#endif
-	#ifndef CONFIG_USE_SYNC_TOSET_TIME
+//	#ifndef CONFIG_USE_SYNC_TOSET_TIME
+	#ifdef CONFIG_USE_SYNC_TOSET_TIME
 	&menu_L2_Sync,
 	#endif
 	#ifndef ELIMINATE_BLUEROBIN
 	&menu_L2_CalDist,
 	#endif
-	#ifndef CONFIG_USE_DISCRET_RFBSL
+//	#ifndef CONFIG_USE_DISCRET_RFBSL
+  #ifdef CONFIG_USE_DISCRET_RFBSL
 	&menu_L2_RFBSL,
 	#endif
 	#ifdef CONFIG_PROUT
@@ -505,6 +563,9 @@ const struct menu *menu_L2[]={
 	#endif	
 	#ifdef CONFIG_USE_GPS
 	&menu_L2_Gps,
+	#endif
+	#ifdef CONFIG_SWAP
+	&menu_L2_Synchro
 	#endif
 };
 

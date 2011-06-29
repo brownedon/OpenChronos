@@ -328,10 +328,16 @@ __interrupt void TIMER0_A0_ISR(void)
 	
 	// Add 1 second to global time
 	clock_tick();
+
+#ifdef CONFIG_SWAP
+  // Run periodic SWAP tasks
+  swProcessPeriodicTasks();
+#endif
 	
 	// Set clock update flag
 	display.flag.update_time = 1;
-	
+
+/*
 	// While SimpliciTI stack operates or BlueRobin searches, freeze system state
 	//pfs
 	#ifdef ELIMINATE_BLUEROBIN
@@ -354,7 +360,7 @@ __interrupt void TIMER0_A0_ISR(void)
 		_BIC_SR_IRQ(LPM3_bits);     
 		return;
 	}
-	
+*/	
 	// -------------------------------------------------------------------
 	// Service modules that require 1/min processing
 	if (sTime.drawFlag >= 2) 

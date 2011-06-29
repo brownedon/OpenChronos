@@ -55,8 +55,12 @@
 // logic
 #include "clock.h"
 #include "alarm.h"
+#ifdef CONFIG_SWAP
+#include "swapbrsr.h"
+#else
 #include "rfsimpliciti.h"
 #include "simpliciti.h"
+#endif
 #include "altitude.h"
 #include "stopwatch.h"
 
@@ -138,8 +142,10 @@ __interrupt void PORT2_ISR(void)
 {
 	u8 int_flag, int_enable;
 	u8 buzzer = 0;
+#ifndef CONFIG_SWAP
 	u8 simpliciti_button_event = 0;
 	static u8 simpliciti_button_repeat = 0;
+#endif
 
 	// Clear button flags
 	button.all_flags = 0;
@@ -150,6 +156,7 @@ __interrupt void PORT2_ISR(void)
 	// Store valid button interrupt flag
 	int_flag = BUTTONS_IFG & int_enable;
 
+#ifndef CONFIG_SWAP
 	// ---------------------------------------------------
 	// While SimpliciTI stack is active, buttons behave differently:
 	//  - Store button events in SimpliciTI packet data
@@ -191,9 +198,10 @@ __interrupt void PORT2_ISR(void)
   	}
   	else // Normal operation
   	{
+#endif
 		// Debounce buttons
 		if ((int_flag & ALL_BUTTONS) != 0)
-		{ 
+		{
 			// Disable PORT2 IRQ
 			__disable_interrupt();
 			BUTTONS_IE = 0x00; 
@@ -253,7 +261,7 @@ __interrupt void PORT2_ISR(void)
 			if (BUTTON_UP_IS_PRESSED)
 			{
 				button.flag.up = 1;
-		
+
 				// Generate button click
 				buzzer = 1;
 			}
@@ -302,9 +310,17 @@ __interrupt void PORT2_ISR(void)
 				P2DIR |= BUTTON_BACKLIGHT_PIN;
 				button.flag.backlight = 1;
 			}
-		}	
+		}
+#ifndef CONFIG_SWAP
 	}
-	
+#else
+  // Notify button event to the SWAP browser
+  if (isSwapMode())
+    swButtonEvent();
+#endif
+
+
+
 	// Trying to lock/unlock buttons?
 	if ((button.flag.num && button.flag.down) || (button.flag.star && button.flag.up))
 	{
@@ -312,7 +328,6 @@ __interrupt void PORT2_ISR(void)
 		buzzer = 0;
 		button.all_flags = 0;
 	}
-
 	// Generate button click when button was activated
 	if (buzzer)
 	{
@@ -325,7 +340,6 @@ __interrupt void PORT2_ISR(void)
 		}
 		else 
 		#endif
-		
 		#ifdef CONFIG_EGGTIMER
 		if (sEggtimer.state == EGGTIMER_ALARM) {
 			stop_eggtimer_alarm();
@@ -333,16 +347,13 @@ __interrupt void PORT2_ISR(void)
 		}
 		else
 		#endif
-		
 		if (!sys.flag.up_down_repeat_enabled && !sys.flag.no_beep)
 		{
 			start_buzzer(1, CONV_MS_TO_TICKS(20), CONV_MS_TO_TICKS(150));
 		}
-		
 		// Debounce delay 2
 		Timer0_A4_Delay(CONV_MS_TO_TICKS(BUTTONS_DEBOUNCE_TIME_OUT));
 	}
-	
 	#ifdef FEATURE_PROVIDE_ACCEL
 	// ---------------------------------------------------
 	// Acceleration sensor IRQ
@@ -370,7 +381,7 @@ __interrupt void PORT2_ISR(void)
 	
 		// Check if this button event is short enough
 		if (BUTTON_STAR_IS_PRESSED) button.flag.star = 0;
-		if (BUTTON_NUM_IS_PRESSED) button.flag.num = 0;	
+		if (BUTTON_NUM_IS_PRESSED) button.flag.num = 0;
 	}
 	
 	// Reenable PORT2 IRQ
@@ -380,7 +391,7 @@ __interrupt void PORT2_ISR(void)
 	__enable_interrupt();
 
 	// Exit from LPM3/LPM4 on RETI
-	__bic_SR_register_on_exit(LPM4_bits); 
+	__bic_SR_register_on_exit(LPM4_bits);
 }
 
 
