@@ -47,6 +47,11 @@ enum SYSTATE
 byte swSystemState;
 
 /**
+ * Security password (not implemented yet)
+ */
+byte dtPasswd[1];
+
+/**
  * Frequency channel
  */
 byte swFreqChannel;

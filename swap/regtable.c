@@ -86,6 +86,9 @@ REGISTER regFreqChannel = {REGI_FREQCHANNEL, &swFreqChann, NULL, &setFreqChannel
 // Security option
 static SWDATA swSecurity = {&swSecuOption, sizeof(swSecuOption)};
 REGISTER regSecuOption = {REGI_SECUOPTION, &swSecurity, NULL, &setSecuOption};
+// Security password (not implemented yet)
+static SWDATA swPasswd = {dtPasswd, sizeof(dtPasswd)};
+REGISTER regSecuPasswd = {REGI_SECUPASSWD, &swPasswd, NULL, NULL};
 // Security nonce
 static SWDATA swNonce = {&swSecuNonce, sizeof(swSecuNonce)};
 REGISTER regSecuNonce = {REGI_SECUNONCE, &swNonce, NULL, NULL};
@@ -152,6 +155,7 @@ REGISTER *regTable[] = {
         &regSysState,
         &regFreqChannel,
         &regSecuOption,
+        &regSecuPasswd,
         &regSecuNonce,
         &regNetworkId,
         &regDevAddress,
