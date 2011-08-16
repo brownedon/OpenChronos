@@ -396,6 +396,7 @@ void sx_rf(u8 line)
 	  swStart();
     swSendInfoPacket(REGI_PRODUCTCODE);
     setChronosState(SYSTATE_SENDACC);
+    DELAY_MS(50);
     swSendInfoPacket(REGI_SYSSTATE);
     swStop();
 
@@ -442,15 +443,13 @@ void sx_synchro(u8 line)
     swStart();
     swSendInfoPacket(REGI_PRODUCTCODE);
     setChronosState(SYSTATE_SYNC);
+    DELAY_MS(50);
     swSendInfoPacket(REGI_SYSSTATE);
 
     // Start blinking the RF icon
     display_symbol(LCD_ICON_BEEPER1, SEG_ON_BLINK_ON);
     display_symbol(LCD_ICON_BEEPER2, SEG_ON_BLINK_ON);
     display_symbol(LCD_ICON_BEEPER3, SEG_ON_BLINK_ON);
-
-DELAY_MS(100);
-swQryRegister(3,3,0);
   }
   else
     swStopSwapRxTx();

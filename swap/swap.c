@@ -130,9 +130,6 @@ void swStop(void)
   // New SWAP state = SWAP stopped
   setChronosState(SYSTATE_STOPSWAP);
 
-  // Stop accelerometer
-  as_stop();
-
   // Go to sleep mode
   MRFI_RxIdle();
   MRFI_Sleep();
@@ -264,6 +261,7 @@ static void dispatchSwapPacket(SWPACKET *swPacket)
     default:
       break;
   }
+display_chars(LCD_SEG_L1_3_0, (byte*)"PAC", SEG_ON);
 }
 
 /**

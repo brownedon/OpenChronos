@@ -186,7 +186,7 @@
 #define SMARTRF_SETTING_IOCFG2      0x29    // GDO2 Output Configuration
 #define SMARTRF_SETTING_PKTCTRL1    0x04    // Packet Automation Control
 #define SMARTRF_SETTING_PKTCTRL0    0x05    // Packet Automation Control
-#define SMARTRF_SETTING_ADDR        0x00    // Device Address
+#define SMARTRF_SETTING_ADDR        0x01    // Device Address
 #define SMARTRF_SETTING_PKTLEN      0xFF    // Packet Length
 
 #endif // SMARTRF_CC430_H

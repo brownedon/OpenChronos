@@ -45,7 +45,7 @@
  */
  
  // pfs added
-#include "../../Applications/configuration/smpl_nwk_config.h"
+//#include "../../Applications/configuration/smpl_nwk_config.h"
 
 #include "bsp.h"
 #include "mrfi_defs.h"
@@ -113,6 +113,9 @@
 #define MRFI_RADIO_STATE_OFF      1
 #define MRFI_RADIO_STATE_IDLE     2
 #define MRFI_RADIO_STATE_RX       3
+
+/* To be removed */
+#define MAX_HOPS  3 
 
 /* Platform constant used to calculate worst-case for an application
  * acknowledgment delay. Used in the NWK_REPLY_DELAY() macro.
