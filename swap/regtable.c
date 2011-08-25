@@ -238,8 +238,9 @@ static const void setSysState(byte id, byte *state)
  */
 static const void setFreqChannel(byte id, byte *channel)
 {
+  SWDATA swVal = {channel, regTable[id]->value->length};
   // Send info message before entering the new frequency channel
-  swTransmitInfo(id, channel);
+  swTransmitInfo(id, &swVal);
   // Update register value
   swSetFreqChannel(channel[0]);
   // Send product code over the new frequency channel
@@ -256,8 +257,9 @@ static const void setFreqChannel(byte id, byte *channel)
  */
 static const void setSecuOption(byte id, byte *secu)
 {
+  SWDATA swVal = {secu, regTable[id]->value->length};
   // Send info message before entering the new security option
-  swTransmitInfo(id, secu);
+  swTransmitInfo(id, &swVal);
   // Update register value
   swSecuOption = secu[0] & 0x0F;
 }
@@ -272,8 +274,9 @@ static const void setSecuOption(byte id, byte *secu)
  */
 static const void setNetworkId(byte id, byte *netId)
 {
+  SWDATA swVal = {netId, regTable[id]->value->length};
   // Send info message before entering the new network ID
-  swTransmitInfo(id, netId);
+  swTransmitInfo(id, &swVal);
   // Update register value
   swSetNetworkId(netId);
   // Send product code with the new network id
@@ -292,8 +295,9 @@ static const void setDevAddress(byte id, byte *addr)
 {
   if (addr[0] > 0)
   {
+    SWDATA swVal = {addr, regTable[id]->value->length};
     // Send info message before taking the new device address
-    swTransmitInfo(id, addr);
+    swTransmitInfo(id, &swVal);
     // Update device address
     swSetDeviceAddress(addr[0]);
   }

@@ -261,7 +261,6 @@ static void dispatchSwapPacket(SWPACKET *swPacket)
     default:
       break;
   }
-display_chars(LCD_SEG_L1_3_0, (byte*)"PAC", SEG_ON);
 }
 
 /**
