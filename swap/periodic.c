@@ -46,12 +46,12 @@ bool transmitACCdata = false;
  */
 void swProcessPeriodicTasks(void) 
 {
-  if ((getChronosState() == SYSTATE_STOPSWAP) && (swTxPeriod != 0))
+  if ((getChronosState() == SYSTATE_STOPSWAP) && (swTxPeriod > 0))
   {
     // Transmit sensor data?
     if (countTransmitSensorData == 0)
     {
-      countTransmitSensorData = swTxPeriod * 60;
+      countTransmitSensorData = swTxPeriod;
     	swInit();
       regTable[REGI_TEMPPRESSALTI]->updateValue(REGI_TEMPPRESSALTI);
       swStop();
